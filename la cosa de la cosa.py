@@ -63,8 +63,8 @@ def hacerPlot(f, rangoX, tangente_x,tangente_y, punto1, punto2, punto3, punto4):
         plt.scatter(punto3[0], punto3[1])
         plt.scatter(punto4[0], punto4[1])
 
-        plt.xlim([-9000,3000])
-        plt.ylim([-9000,3000])
+        plt.xlim([500,4400])
+        plt.ylim([-900,3000])
 
         # cambia esto para enfocar todo (no escalado)
         # plt.xlim([800,2900])
@@ -84,6 +84,20 @@ def hacerPlot(f, rangoX, tangente_x,tangente_y, punto1, punto2, punto3, punto4):
         plt.ylim([punto3[1] - 500, punto3[1] + 500])
 
         str.pyplot(plt)
+
+def sacarAnguloEnRad(slope):
+    grados = np.arctan(slope)
+    return grados
+
+def sacarDiferenciaEntre2Slopes(slope1, slope2):
+    grados1 = sacarAnguloEnRad(slope1)
+    grados2 = sacarAnguloEnRad(slope2)
+
+    rad = grados1 - grados2
+
+    deg = np.degrees(rad)
+
+    return deg
 
 # parte 3, interfaz grafica
 
@@ -125,14 +139,18 @@ str.text(f"Radio = {radio}, X = {x}, Y = {y}.") # UwU
 
 a = sacarTangente(puntoTangente, arrayDeX, f(arrayDeX))
 
-benches = ((1400, 1300, 1200, 1300, 1400),(-8200, -8000, -8000,-8200, -8200))
+benches = ((1320, 1400, 1380, 1300, 1320 ),(-650, -720, -740, -670,-650))
 
 plt.plot(benches[0], benches[1])
 
-lineaTangenteX, lineaTangenteY = tangente(a, radio * 2 , (arrayDeX[puntoTangente], f(arrayDeX[puntoTangente])))
+lineaTangenteX, lineaTangenteY = tangente(a, radio * 0.8 , (arrayDeX[puntoTangente], f(arrayDeX[puntoTangente])))
 str.markdown(f"valor de la tangente: {a:.2f}, en el punto {arrayDeX[puntoTangente]}")
 
 hacerPlot(f, arrayDeX, lineaTangenteX, lineaTangenteY,(x,y), (arrayDeX[punto2Circulo], f(arrayDeX[punto2Circulo])), (arrayDeX[int((puntoTangente + punto2Circulo) / 2)], f(arrayDeX[int((puntoTangente + punto2Circulo) / 2)])), (arrayDeX[puntoTangente], f(arrayDeX[puntoTangente])))
 
 str.text(f"Los valores importantes que podemos tener incluyen:\nX min = {xInicial}\nX max = {xFinal}\npos seleccionada: {arrayDeX[puntoTangente]}, {f(arrayDeX[puntoTangente])}")
 str.text(f"formula es: {f}")
+
+diferencia = sacarDiferenciaEntre2Slopes(sacarTangente(puntoTangente, arrayDeX, f(arrayDeX)), sacarTangente(puntoTangente - 1, arrayDeX, f(arrayDeX)))
+
+str.text(f"angulo de diferencia = {diferencia}")
