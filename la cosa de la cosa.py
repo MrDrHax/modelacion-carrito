@@ -2,6 +2,7 @@ from numpy.core.defchararray import array
 import streamlit as str
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
 # parte 1, funcion de la curba 
 
@@ -13,6 +14,11 @@ def sacarFormula(coordenadasX : list, coordenadasY : list): # sacar los valores 
     print(p,f)
 
     return f
+
+def saveToJson(listaX, listaY):
+    data = {"formula": {"X" : listaX, "Y": listaY}}
+    with open('data.json', 'w') as outfile:
+        json.dump(data, outfile)
 
 def sacarRadio(punto1, punto2, punto3):
     puntosMedios1 = ( (punto1[0] + punto2[0]) / 2 , (punto1[1] + punto2[1]) / 2 ) # punto medio entre los 3 puntos
@@ -154,3 +160,6 @@ str.text(f"formula es: {f}")
 diferencia = sacarDiferenciaEntre2Slopes(sacarTangente(puntoTangente, arrayDeX, f(arrayDeX)), sacarTangente(puntoTangente - 1, arrayDeX, f(arrayDeX)))
 
 str.text(f"angulo de diferencia = {diferencia}")
+
+if str.button("save to JSON"):
+    saveToJson(listaX, listaY)
