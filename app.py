@@ -1,3 +1,4 @@
+from numpy.lib.function_base import angle
 import pyglet, json
 import numpy as np
 
@@ -14,16 +15,33 @@ def sacarFormula(): # sacar los valores de a, b, c , d, considerando coordenadas
 class carritoClass:
     acceleration = 0
     angularVel = 0
-    vel = 0
+    vel = 80
     pos = [0,0]
-    angle = 0
+    angle = 90
     time = 0.02
+    buscandoPunto = 49
+    distanceThreshhold = 25
+    deltaX = 0
+    deltaY = 0
+
+    slope = 0
+    angleNeededToStirr = 0
+    angleNeededNormalized = 0
+    distance = 0
+
 
     def __init__(self):
         self.carritoIMG = pyglet.image.load('assets/carrito.png')
         self.carritoIMG.anchor_x = self.carritoIMG.width // 2 
         self.carritoIMG.anchor_y = self.carritoIMG.height // 2 
         self.sprite = pyglet.sprite.Sprite(self.carritoIMG, x=50, y=50)
+        self.sprite.scale = 0.5
+
+        self.chashIMG = pyglet.image.load('assets/resbalo.png')
+        self.chashIMG.anchor_x = self.chashIMG.width 
+        self.chashIMG.anchor_y = 0
+        self.crashSprite = pyglet.sprite.Sprite(self.chashIMG, x=window.width, y=0)
+
         self.label = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
@@ -32,20 +50,22 @@ class carritoClass:
         self.label2 = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
-                          x = window.width - 300, y = window.height - 100,
-                          anchor_x='center', anchor_y='center')
+                          x = window.width - 50, y = window.height - 100,
+                          anchor_x='right', anchor_y='center')
         
         self.label3 = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
-                          x = window.width - 300, y = window.height - 150,
-                          anchor_x='center', anchor_y='center')
+                          x = window.width - 50, y = window.height - 150,
+                          anchor_x='right', anchor_y='center')
 
         self.label4 = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
-                          x = window.width - 300, y = window.height - 200,
-                          anchor_x='center', anchor_y='center')
+                          x = window.width - 50, y = window.height - 200,
+                          anchor_x='right', anchor_y='center')
+        
+        self.pos = [calleX[-1], -500]
     
     def changeAcceleration(self, desired):
         self.acceleration = desired
@@ -53,18 +73,71 @@ class carritoClass:
     def changeStirr(self, desired):
         self.angularVel = desired
 
+    def getNextPoint(self):
+        self.deltaX = (calleX[self.buscandoPunto] - self.pos[0])
+        self.deltaY = (calleY[self.buscandoPunto] - self.pos[1])
+        self.distance  = self.deltaX**2 + self.deltaY**2 # dejamos la distancia al cuadrado para optimizar, ya que sacar raiz cuadrada es algo que toma muchos recursos
+
+        try: 
+            self.slope = self.deltaY/self.deltaX
+            self.angleNeededNormalized = np.degrees(np.arctan(self.slope))
+            if self.deltaY >= 0:
+                if self.deltaX >= 0: # cuadrante 4
+                    self.angleNeededNormalized += 180
+                else: # cuadrante 3
+                    self.angleNeededNormalized += 360
+            else:
+                if self.deltaX >= 0: # cuadrante 2
+                    self.angleNeededNormalized += 180
+                else: # cuadrante 1
+                    pass
+            self.angleNeededToStirr = self.angleNeededNormalized #- self.angle
+
+        except:
+            if self.deltaY > 0:
+                self.angleNeededToStirr = 270 #- self.angle
+            else:
+                self.angleNeededToStirr = 90 #- self.angle
+
+        self.angleNeededToStirr = (self.angle) - (self.angleNeededToStirr - 180) # flip
+        if self.angleNeededToStirr > 180:
+            self.angleNeededToStirr -= 360
+        self.changeAcceleration(11)
+
+    def followCurve(self):
+        self.getNextPoint()
+
+        if self.distance < self.distanceThreshhold:
+            self.buscandoPunto -= 1
+            if self.buscandoPunto < 0:
+                self.pos = [calleX[-1], -1000]
+                self.buscandoPunto = len(calleX)-1
+        
+        self.changeStirr(-self.angleNeededToStirr/10) 
+
     def calculateAll(self):
         if self.vel > 0:
             self.vel += self.acceleration * self.time - self.vel ** 2 / 40000
         else:
+            self.vel = 0
             if self.acceleration > 0:
                 self.vel += self.acceleration * self.time - self.vel ** 2 / 40000
 
-        self.pos[0] += np.cos(np.radians(-self.angle)) * self.vel
-        self.pos[1] += np.sin(np.radians(-self.angle)) * self.vel
-        self.angle += self.angularVel * self.vel
+        self.pos[0] += np.cos(np.radians(self.angle)) * self.vel * self.time
+        self.pos[1] += np.sin(np.radians(self.angle)) * self.vel * self.time
+
+        # hacemos que el angulo interno simpre este entre el rango de 0 a 360
+        if self.angle < 0:
+            self.angle += 360
+        if self.angle > 360:
+            self.angle -= 360
+        
+        if autoControl:
+            self.followCurve()
+        self.angle += self.angularVel #* self.vel
         self.sprite.position = (self.pos[0] * scale + offset[0], self.pos[1] * scale + offset[1])
-        self.sprite.rotation = self.angle
+        self.sprite.rotation = -self.angle
+
 
     def draw(self):
         self.sprite.draw()
@@ -77,13 +150,16 @@ class carritoClass:
         self.label3.draw()
         self.label4.draw()
 
+        if not autoControl:
+            self.crashSprite.draw()
+
 # start of pyglet!!!
 window = pyglet.window.Window(fullscreen = True)
 
 # batches
 lineBatch = pyglet.graphics.Batch()
 
-elCoche = carritoClass()
+square = pyglet.shapes.Rectangle(0, 0, window.width, window.height, color=(55, 150, 55))
 
 # data
 formula = sacarFormula()
@@ -105,23 +181,37 @@ for i in range(len(calleX)-1):
 track.append(pyglet.shapes.Line((calleX[0]) * scale + offset[0], (calleY[0]) * scale + offset[1], (calleX[0]) * scale + offset[0], window.get_size()[1], 5, color = (145, 55, 31), batch = lineBatch))
 track.append(pyglet.shapes.Line((calleX[-1]) * scale + offset[0], (calleY[-1]) * scale + offset[1], (calleX[-1]) * scale + offset[0], 0, 5, color = (145, 55, 31), batch = lineBatch))
 
+elCoche = carritoClass()
+
 @window.event
 def on_draw():
     window.clear()
+    square.draw()
     lineBatch.draw() 
     elCoche.draw()
 
 @window.event
 def on_key_press(symbol, modifiers):
+    global elCoche
     if symbol == pyglet.window.key.W:
         elCoche.changeAcceleration(11)
     if symbol == pyglet.window.key.S:
         elCoche.changeAcceleration(-20)
 
     if symbol == pyglet.window.key.A:
-        elCoche.changeStirr(-0.3)
+        elCoche.changeStirr(3)
     if symbol == pyglet.window.key.D:
-        elCoche.changeStirr(0.3)
+        elCoche.changeStirr(-3)
+
+    if symbol == pyglet.window.key.SPACE:
+        global autoControl
+        autoControl = False
+        elCoche.changeAcceleration(-20)
+        elCoche.changeStirr(0)
+
+    if symbol == pyglet.window.key.R:
+        elCoche = carritoClass()
+        autoControl = True
 
 @window.event
 def on_key_release(symbol, modifiers):
@@ -134,6 +224,8 @@ def on_key_release(symbol, modifiers):
         elCoche.changeStirr(0)
     if symbol == pyglet.window.key.D:
         elCoche.changeStirr(0)
+
+autoControl = True
 
 def updatePos(rm):
     elCoche.calculateAll()
