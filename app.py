@@ -116,11 +116,18 @@ class carritoClass:
             else:
                 self.angleNeededToStirr = 90 #- self.angle
 
-        self.angleNeededToStirr = (self.angle) - (self.angleNeededToStirr - 180) # flip
+        self.angleNeededToStirr = ((self.angle) - (self.angleNeededToStirr - 180)) # flip
         if self.angleNeededToStirr > 180:
             self.angleNeededToStirr -= 360
+
         if nonManualAcceleration:
             self.changeAcceleration(11)
+
+        if self.vel > 96 and not -15 < self.angleNeededToStirr < 15:
+            global autoControl
+            autoControl = False
+            self.changeAcceleration(-20)
+            self.angleNeededToStirr = 0
 
     def followCurve(self):
         self.getNextPoint()
@@ -241,6 +248,10 @@ def on_key_press(symbol, modifiers):
 
     if symbol == pyglet.window.key.M:
         nonManualAcceleration = False
+
+    if symbol == pyglet.window.key.O:
+        nonManualAcceleration = False
+        elCoche.changeAcceleration(13)
 
 @window.event
 def on_key_release(symbol, modifiers):
