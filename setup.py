@@ -19,7 +19,7 @@ except:
     doTheExit = False
 
 if doTheExit:
-    exit()
+    exit('sys completed!')
 
 if not input('Would you like to continue with auto installation? (y/n) ') == 'y':
     print('exiting...')
