@@ -123,7 +123,7 @@ class carritoClass:
         if nonManualAcceleration:
             self.changeAcceleration(11)
 
-        if self.vel > 96 and not -15 < self.angleNeededToStirr < 15:
+        if self.vel > 28.45 and not -15 < self.angleNeededToStirr < 15: # codigo para ver si va muy rapido, en una curva
             global autoControl
             autoControl = False
             self.changeAcceleration(-20)
@@ -270,7 +270,7 @@ def on_key_release(symbol, modifiers):
         nonManualAcceleration = True
 
 autoControl = True
-nonManualAcceleration = True
+nonManualAcceleration = False
 
 def updatePos(rm):
     elCoche.calculateAll()
