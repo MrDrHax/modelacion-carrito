@@ -11,7 +11,7 @@ else:
     exit()
 
 try:
-    import streamlit, pandas, matplotlib, mpl_toolkits, numpy
+    import streamlit, matplotlib, pyglet, numpy
     print('All software requirements are met, not runing any extra procceses.')
     doTheExit = True
 except:
@@ -35,16 +35,6 @@ except:
     print("Streamlit is not installed, installing...")
     install('streamlit')
 
-print('testing for pandas')
-
-try:
-    import pandas
-    print('pandas is installed!')
-
-except:
-    print("pandas is not installed, installing...")
-    install('pandas')
-
 print('testing for matplotlib')
 
 try:
@@ -55,15 +45,15 @@ except:
     print("matplotlib is not installed, installing...")
     install('matplotlib')
 
-print('testing for mpl_toolkits')
+print('testing for pyglet')
 
 try:
-    import mpl_toolkits
-    print('mpl_toolkits is installed!')
+    import pyglet
+    print('pyglet is installed!')
 
 except:
-    print("mpl_toolkits is not installed, installing...")
-    install('mpl_toolkits')
+    print("pyglet is not installed, installing...")
+    install('pyglet')
 
 print('testing for numpy')
 
