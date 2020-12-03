@@ -1,6 +1,7 @@
 from numpy.lib.function_base import angle
 import pyglet, json
 import numpy as np
+from time import time
 
 def sacarFormula(): # sacar los valores de a, b, c , d, considerando coordenadas
     with open('data.json') as json_file:
@@ -29,6 +30,7 @@ class carritoClass:
     angleNeededNormalized = 0
     distance = 0
 
+    startTime = 0
 
     def __init__(self):
         self.carritoIMG = pyglet.image.load('assets/carrito.png')
@@ -42,30 +44,45 @@ class carritoClass:
         self.chashIMG.anchor_y = 0
         self.crashSprite = pyglet.sprite.Sprite(self.chashIMG, x=window.width, y=0)
 
+        self.labelRenderer = pyglet.graphics.Batch()
+
         self.label = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
                           x = window.width - 200, y = window.height - 50,
-                          anchor_x='center', anchor_y='center')
+                          anchor_x='center', anchor_y='center', batch = self.labelRenderer)
         self.label2 = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
                           x = window.width - 50, y = window.height - 100,
-                          anchor_x='right', anchor_y='center')
+                          anchor_x='right', anchor_y='center', batch = self.labelRenderer)
         
         self.label3 = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
                           x = window.width - 50, y = window.height - 150,
-                          anchor_x='right', anchor_y='center')
+                          anchor_x='right', anchor_y='center', batch = self.labelRenderer)
 
         self.label4 = pyglet.text.Label('Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
                           x = window.width - 50, y = window.height - 200,
-                          anchor_x='right', anchor_y='center')
+                          anchor_x='right', anchor_y='center', batch = self.labelRenderer)
+        
+        self.angleLabel = pyglet.text.Label('',
+                          font_name='Times New Roman',
+                          font_size=36,
+                          x = window.width - 50, y = window.height - 250,
+                          anchor_x='right', anchor_y='center', batch = self.labelRenderer)
+
+        self.timeLabel = pyglet.text.Label('',
+                          font_name='Times New Roman',
+                          font_size=36,
+                          x = window.width - 50, y = window.height - 300,
+                          anchor_x='right', anchor_y='center', batch = self.labelRenderer)
         
         self.pos = [calleX[-1], -500]
+        self.startTime = time()
     
     def changeAcceleration(self, desired):
         self.acceleration = desired
@@ -102,7 +119,8 @@ class carritoClass:
         self.angleNeededToStirr = (self.angle) - (self.angleNeededToStirr - 180) # flip
         if self.angleNeededToStirr > 180:
             self.angleNeededToStirr -= 360
-        self.changeAcceleration(11)
+        if nonManualAcceleration:
+            self.changeAcceleration(11)
 
     def followCurve(self):
         self.getNextPoint()
@@ -142,13 +160,12 @@ class carritoClass:
     def draw(self):
         self.sprite.draw()
         self.label.text = f'vel: {self.vel * 3.6 :.2f} km/h'
-        self.label2.text = f'pos: x{self.pos[0] :.2f}, y{self.pos[1] :.2f}'
+        self.label2.text = f'pos (m): {self.pos[0] :.2f}, {self.pos[1] :.2f}'
         self.label3.text = f'perdida de energia: {(self.vel ** 2 / 40000) * 740 * self.vel:.2f} J'
         self.label4.text = f'poder: {self.acceleration * 740 * self.vel:.2f} J'
-        self.label.draw()
-        self.label2.draw()
-        self.label3.draw()
-        self.label4.draw()
+        self.angleLabel.text = f'angulo de correccion: {self.angleNeededToStirr:.3f}'
+        self.timeLabel.text = f'delta t: {time() - self.startTime:.2f}'
+        self.labelRenderer.draw()
 
         if not autoControl:
             self.crashSprite.draw()
@@ -201,7 +218,7 @@ def on_draw():
 
 @window.event
 def on_key_press(symbol, modifiers):
-    global elCoche
+    global elCoche, nonManualAcceleration
     if symbol == pyglet.window.key.W:
         elCoche.changeAcceleration(11)
     if symbol == pyglet.window.key.S:
@@ -222,8 +239,12 @@ def on_key_press(symbol, modifiers):
         elCoche = carritoClass()
         autoControl = True
 
+    if symbol == pyglet.window.key.M:
+        nonManualAcceleration = False
+
 @window.event
 def on_key_release(symbol, modifiers):
+    global nonManualAcceleration
     if symbol == pyglet.window.key.W:
         elCoche.changeAcceleration(0)
     if symbol == pyglet.window.key.S:
@@ -234,7 +255,11 @@ def on_key_release(symbol, modifiers):
     if symbol == pyglet.window.key.D:
         elCoche.changeStirr(0)
 
+    if symbol == pyglet.window.key.M:
+        nonManualAcceleration = True
+
 autoControl = True
+nonManualAcceleration = True
 
 def updatePos(rm):
     elCoche.calculateAll()
