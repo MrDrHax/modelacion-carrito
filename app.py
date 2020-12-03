@@ -159,7 +159,7 @@ window = pyglet.window.Window(fullscreen = True)
 # batches
 lineBatch = pyglet.graphics.Batch()
 
-square = pyglet.shapes.Rectangle(0, 0, window.width, window.height, color=(55, 150, 55))
+
 
 # data
 formula = sacarFormula()
@@ -180,6 +180,15 @@ for i in range(len(calleX)-1):
 
 track.append(pyglet.shapes.Line((calleX[0]) * scale + offset[0], (calleY[0]) * scale + offset[1], (calleX[0]) * scale + offset[0], window.get_size()[1], 5, color = (145, 55, 31), batch = lineBatch))
 track.append(pyglet.shapes.Line((calleX[-1]) * scale + offset[0], (calleY[-1]) * scale + offset[1], (calleX[-1]) * scale + offset[0], 0, 5, color = (145, 55, 31), batch = lineBatch))
+
+# sprites / shapes
+square = pyglet.shapes.Rectangle(0, 0, window.width, window.height, color=(55, 150, 55))
+
+benchesIMG = pyglet.image.load('assets/gradas.jpg')
+benchesIMG.anchor_x = benchesIMG.width // 2
+benchesIMG.anchor_y = benchesIMG.height // 2
+crashSprite = pyglet.sprite.Sprite(benchesIMG, x = (1250) * scale + offset[0], y = (-600) * scale + offset[1], batch = lineBatch)
+crashSprite.update(rotation=-30, scale_x=0.3, scale_y=None)
 
 elCoche = carritoClass()
 
